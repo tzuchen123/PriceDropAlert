@@ -1,4 +1,4 @@
-const db = require('../SQLite3');
+const db = require('../db/SQLite3');
 
 function listTrackedProducts(userId, replyMessage) {
     db.all('SELECT product_url FROM tracked_products WHERE user_id = ?', [userId], (err, rows) => {
