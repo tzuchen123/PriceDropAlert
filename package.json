@@ -15,5 +15,10 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
-  }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "jest --coverage",
+    "start": "node server.js"
+  }  
 }

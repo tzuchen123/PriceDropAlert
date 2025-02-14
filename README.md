@@ -37,7 +37,6 @@ express框架，用來與使用者互動，功能如下
 
 ## ci/cd
 
-### free
-
-### payment
+## production
+ec2
 

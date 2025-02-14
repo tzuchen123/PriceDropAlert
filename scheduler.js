@@ -3,7 +3,7 @@ const { exec } = require('child_process');
 
 console.log('設定每日 12:00 執行爬蟲和通知...');
 
-cron.schedule('0 15 * * *', () => {
+cron.schedule('0 12 * * *', () => {
     console.log('開始爬取衣服特價...');
     exec('node crawler.js', (error, stdout, stderr) => {
         if (error) {
