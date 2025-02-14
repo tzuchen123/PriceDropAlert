@@ -23,6 +23,7 @@ app.post('/', (req, res) => {
 
 // 啟動伺服器
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '::', () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ 伺服器運行中: http://[::]:${PORT}`);
 });
+
