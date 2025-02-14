@@ -18,7 +18,7 @@ redisClient.on('error', (err) => console.error('❌ Redis 連線錯誤:', err));
 // **在應用啟動時連線 Redis**
 async function connectRedis() {
     if (!redisClient.isOpen) {
-        console.log("ℹ️ 連接 Redis...");
+        console.log("🔌 連接 Redis...");
         await redisClient.connect();
         console.log("✅ Redis 連線成功");
     }
@@ -45,19 +45,26 @@ async function setLowestPrice(productUrl, price) {
     }
 }
 
-// **當應用程式結束時關閉 Redis 連線**
+// **正確關閉 Redis**
 async function closeRedis() {
     if (redisClient.isOpen) {
         console.log("🔌 關閉 Redis 連線...");
-        await redisClient.quit();
-        console.log("✅ Redis 連線已關閉");
+        try {
+            await redisClient.quit();  // **正確使用 quit()，讓 Redis 正常關閉**
+            console.log("✅ Redis 連線已關閉");
+        } catch (err) {
+            console.error("❌ Redis 關閉失敗:", err);
+        }
+    } else {
+        console.log("ℹ️ Redis 連線已經關閉");
     }
 }
 
 // **監聽應用結束事件**
 process.on('SIGINT', async () => {
+    console.log("⚠️ 捕捉到 SIGINT (Ctrl+C)，正在關閉 Redis...");
     await closeRedis();
-    process.exit(0);
+    process.exit(0);  // **確保在關閉 Redis 之後再結束程式**
 });
 
 // **導出模組**
