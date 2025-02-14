@@ -1,4 +1,4 @@
-const db = require('../db/SQLite3');
+const db = require('../services/SQLite3');
 
 function trackProduct(userId, messageText, replyMessage) {
     const match = messageText.match(/(https?:\/\/[^\s]+)/);

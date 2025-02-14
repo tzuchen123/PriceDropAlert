@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { handleMessage } = require('./lineBot');
+const { handleMessage } = require('./handlers/lineBot');
 
 require('dotenv').config();
 

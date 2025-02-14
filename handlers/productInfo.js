@@ -1,5 +1,5 @@
-const { getLowestPrice, connectRedis, closeRedis } = require('../db/redis'); // 讀取歷史最低價
-const { connectDB } = require('../db/mongodb'); // 讀取 MongoDB 內最新價格
+const { getLowestPrice, connectRedis, closeRedis } = require('../services/redis'); // 讀取歷史最低價
+const { connectDB } = require('../services/mongodb'); // 讀取 MongoDB 內最新價格
 
 async function getProductInfo(productUrl, replyMessage) {
     try {

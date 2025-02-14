@@ -1,8 +1,8 @@
 const axios = require('axios');
-const trackProduct = require('./handlers/track');
-const untrackProduct = require('./handlers/untrack');
-const listTrackedProducts = require('./handlers/list');
-const getProductInfo = require('./handlers/productInfo');
+const trackProduct = require('./track');
+const untrackProduct = require('./untrack');
+const listTrackedProducts = require('./list');
+const getProductInfo = require('./productInfo');
 
 require('dotenv').config();
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;

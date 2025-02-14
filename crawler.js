@@ -4,7 +4,7 @@ const { connectRedis, getLowestPrice, setLowestPrice, closeRedis } = require('./
 const { updateProduct } = require('./db/mongodb');
 const db = require('./db/SQLite3');
 // const { pool, connectDB, initializeDB } = require('./db/mysql');
-const { sendLineMessage } = require('./notify');
+const { sendLineMessage } = require('./services/notify');
 
 require('dotenv').config();
 
