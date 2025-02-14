@@ -56,5 +56,6 @@ async function updateProduct(data) {
 }
 
 module.exports = {
+    connectDB,
     updateProduct
 };
