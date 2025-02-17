@@ -34,6 +34,14 @@ function handleMessage(event) {
         }
 
         getProductInfo(productUrl, replyMessage);
+    } else if (messageText === "查看所有功能") {
+        const message = `可用功能：
+        - 追蹤商品 [網址]
+        - 取消追蹤商品 [網址]
+        - 查看追蹤
+        - 查詢價格 [網址]`;
+
+        replyMessage(message);
     }
 }
 
