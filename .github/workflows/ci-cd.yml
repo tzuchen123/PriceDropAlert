@@ -51,30 +51,30 @@ jobs:
           "
 
   notify:
-  needs: deploy
-  runs-on: ubuntu-latest
-  if: always()  
-  env:
-    LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-    LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-  steps:
-    - name: 設定通知訊息
-      run: |
-        if [ "${{ needs.deploy.result }}" == "success" ]; then
-          MESSAGE="✅ CI/CD 成功！\nRepo: ${{ github.repository }}\nCommit: ${{ github.sha }}"
-        else
-          MESSAGE="❌ CI/CD 失敗，請檢查！\nRepo: ${{ github.repository }}"
-        fi
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()  
+    env:
+      LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+      LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+    steps:
+      - name: 設定通知訊息
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            MESSAGE="✅ CI/CD 成功！\nRepo: ${{ github.repository }}\nCommit: ${{ github.sha }}"
+          else
+            MESSAGE="❌ CI/CD 失敗，請檢查！\nRepo: ${{ github.repository }}"
+          fi
 
-        curl -X POST https://api.line.me/v2/bot/message/push \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $LINE_CHANNEL_ACCESS_TOKEN" \
-          -d "{
-              \"to\": \"$LINE_USER_ID\",
-              \"messages\":[
-                  {
-                      \"type\":\"text\",
-                      \"text\":\"$MESSAGE\"
-                  }
-              ]
-          }"
+          curl -X POST https://api.line.me/v2/bot/message/push \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $LINE_CHANNEL_ACCESS_TOKEN" \
+            -d "{
+                \"to\": \"$LINE_USER_ID\",
+                \"messages\":[
+                    {
+                        \"type\":\"text\",
+                        \"text\":\"$MESSAGE\"
+                    }
+                ]
+            }"
