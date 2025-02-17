@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const { connectRedis, getLowestPrice, setLowestPrice, closeRedis } = require('./db/redis');
-const { updateProduct } = require('./db/mongodb');
-const db = require('./db/SQLite3');
+const { connectRedis, getLowestPrice, setLowestPrice, closeRedis } = require('./services/redis');
+const { updateProduct } = require('./services/mongodb');
+const db = require('./services/SQLite3');
 // const { pool, connectDB, initializeDB } = require('./db/mysql');
 const { sendLineMessage } = require('./services/notify');
 
