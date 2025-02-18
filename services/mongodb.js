@@ -44,12 +44,37 @@ async function updateProduct(data) {
     const collection = db.collection(COLLECTION_NAME);
 
     try {
+        // 取得目前記錄的最低價
+        const product = await collection.findOne({ url: data.url });
+        const currentLowest = product?.lowestPrice || Infinity;
+
+        // 確保歷史價格紀錄
+        const priceHistoryEntry = {
+            price: data.currentPrice,
+            timestamp: new Date()
+        };
+
+        // 如果新的價格低於目前最低價，則更新最低價
+        const newLowestPrice = Math.min(currentLowest, data.currentPrice);
+
         await collection.updateOne(
-            { url: data.url },  // 用 URL 作為識別
-            { $set: data },  // 更新商品資訊
-            { upsert: true }  // 如果商品不存在則插入
+            { url: data.url },
+            {
+                $set: {
+                    productName: data.productName,
+                    brandName: data.brandName,
+                    originalPrice: data.originalPrice,
+                    salePrice: data.salePrice,
+                    currentPrice: data.currentPrice,
+                    lowestPrice: newLowestPrice  // 存 MongoDB 內的歷史最低價
+                },
+                $push: { priceHistory: priceHistoryEntry }  // 存價格變化歷史
+            },
+            { upsert: true }
         );
-        console.log(`✅ 更新 MongoDB: ${data.productName} - $${data.currentPrice}`);
+
+        console.log(`✅ 更新 MongoDB: ${data.productName} - $${data.currentPrice}, 最低價: $${newLowestPrice}`);
+
     } catch (error) {
         console.error('❌ 更新 MongoDB 失敗:', error.message);
     }
@@ -59,3 +84,22 @@ module.exports = {
     connectDB,
     updateProduct
 };
+
+
+// {
+//     "_id": ObjectId("..."),
+//     "url": "https://example.com/product/123",
+//     "productName": "Nike Air Max",
+//     "brandName": "Nike",
+//     "originalPrice": "$120",
+//     "salePrice": "$90",
+//     "currentPrice": 100,
+//     "lowestPrice": 80,  // 🔥 記錄歷史最低價
+//     "priceHistory": [
+//       { "price": 120, "timestamp": "2025-02-01T12:00:00Z" },
+//       { "price": 100, "timestamp": "2025-02-10T12:00:00Z" },
+//       { "price": 80, "timestamp": "2025-02-15T12:00:00Z" },
+//       { "price": 100, "timestamp": "2025-02-17T12:00:00Z" }
+//     ],
+//     "timestamp": ISODate("2025-02-17T12:00:00Z")
+//   }
