@@ -1,5 +1,6 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
+
+const { getSiteConfig } = require('./services/sites');
 const { connectRedis, getLowestPrice, setLowestPrice, closeRedis } = require('./services/redis');
 const { updateProduct } = require('./services/mongodb');
 const db = require('./services/SQLite3');
@@ -40,24 +41,41 @@ async function fetchTrackedProducts() {
 
 async function scrapeProductData(url) {
     try {
-        const { data } = await axios.get(url);
-        const $ = cheerio.load(data);
+        const siteConfig = getSiteConfig(url);
+        if (!siteConfig) {
+            console.error(`❌ 未找到匹配的網站配置: ${url}`);
+            return null;
+        }
 
-        const productName = $('.itemName').text().trim();
-        const brandName = $('.brandeName a').text().trim();
-        const originalPrice = $('.priceBefore').first().text().trim();
-        const salePrice = $('.priceAfter').first().text().trim();
-        const currentPrice = parseFloat((salePrice || originalPrice).replace(/[^0-9.]/g, '')) || Infinity;
+        const browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
+        await page.goto(url, { waitUntil: 'networkidle2' });
 
-        return {
-            productName,
-            brandName,
-            originalPrice,
-            salePrice,
-            currentPrice,
-            url,
-            timestamp: new Date()
-        };
+        const productData = await page.evaluate((selectors) => {
+            const getText = (selector) => {
+                const el = document.querySelector(selector);
+                return el ? el.innerText.trim() : null;
+            };
+
+            const getTranslatedText = (selector) => {
+                const el = document.querySelector(selector);
+                return el ? (el.getAttribute('translate') || el.innerText).trim() : null;
+            };
+
+            return {
+                productName: getText(selectors.product_name) || "Unknown Product",
+                brandName: selectors.brand_name ? getText(selectors.brand_name) : null,
+                originalPrice: getTranslatedText(selectors.original_price),
+                salePrice: getTranslatedText(selectors.sale_price),
+                url: window.location.href,
+                timestamp: new Date()
+            };
+        }, siteConfig.selectors);
+
+        await browser.close();
+
+        productData.currentPrice = parseFloat((productData.salePrice || productData.originalPrice || "").replace(/[^0-9.]/g, '')) || Infinity;
+        return productData;
     } catch (error) {
         console.error(`❌ 爬取 ${url} 失敗:`, error.message);
         return null;

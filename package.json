@@ -9,7 +9,7 @@
     "mysql2": "^3.12.0",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
-    "puppeteer": "^24.1.1",
+    "puppeteer": "^24.2.1",
     "redis": "^4.7.0",
     "sqlite3": "^5.1.7"
   },
@@ -20,5 +20,5 @@
     "lint": "eslint .",
     "test": "jest --coverage",
     "start": "node server.js"
-  }  
+  }
 }
