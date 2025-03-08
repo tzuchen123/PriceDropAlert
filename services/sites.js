@@ -3,6 +3,7 @@ const siteConfigs = [
     {
         name: "URBAN RESEARCH TW",
         urlPattern: "https://www.urban-research.tw/",
+        crawler: "axios", // 預設使用 axios
         selectors: {
             product_name: ".itemName",
             brand_name: ".brandeName a",
@@ -13,16 +14,18 @@ const siteConfigs = [
     {
         name: "URBAN RESEARCH JP",
         urlPattern: "https://www.urban-research.jp/",
+        crawler: "puppeteer",
         selectors: {
-            product_name: ".title",
-            brand_name: ".brand-link",
-            original_price: ".was-price",
-            sale_price: ".new-price"
+            product_name: ".dtl-Product_Title",
+            brand_name: ".dtl-Product_ShopName dd a", // 取第一個品牌名稱
+            original_price: ".price_BeforePrice",
+            sale_price: ".price.is-pricedown"
         }
     },
     {
         name: "UNITED ARROWS TW",
         urlPattern: "https://store.united-arrows.tw/",
+        crawler: "axios", // 預設使用 axios
         selectors: {
             product_name: ".title",
             brand_name: ".brand-link",
@@ -33,6 +36,7 @@ const siteConfigs = [
     {
         name: "UNITED ARROWS JP",
         urlPattern: "https://store.united-arrows.co.jp/",
+        crawler: "axios", // 預設使用 axios
         selectors: {
             product_name: ".title",
             brand_name: ".brand-link",
@@ -40,10 +44,10 @@ const siteConfigs = [
             sale_price: ".new-price"
         }
     },
-    // 完成
     {
         name: "dot st TW",
         urlPattern: "https://www.dot-st.tw/",
+        crawler: "axios", // 預設使用 axios
         selectors: {
             product_name: ".salepage-title",
             original_price: ".salepage-suggestprice",
@@ -53,6 +57,7 @@ const siteConfigs = [
     {
         name: "dot st JP",
         urlPattern: "https://www.dot-st.com/",
+        crawler: "axios", // 預設使用 axios
         selectors: {
             product_name: ".item-name",
             brand_name: ".item-detail-brand dd",
@@ -67,4 +72,3 @@ function getSiteConfig(url) {
 }
 
 module.exports = { getSiteConfig };
-

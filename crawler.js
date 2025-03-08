@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
-
+const axios = require('axios');
+const cheerio = require('cheerio');
 const { getSiteConfig } = require('./services/sites');
 const { connectRedis, getLowestPrice, setLowestPrice, closeRedis } = require('./services/redis');
 const { updateProduct } = require('./services/mongodb');
@@ -39,43 +40,99 @@ async function fetchTrackedProducts() {
 //     }
 // }
 
+async function fetchWithAxios(url) {
+    try {
+        console.log(`🌐 嘗試使用 Axios 爬取: ${url}`);
+
+        const response = await axios.get(url, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+                "Referer": "https://www.urban-research.jp/",
+                "Accept-Encoding": "gzip, deflate, br"
+            },
+            timeout: 10000
+        });
+
+        if (!response.data || response.data.length === 0) {
+            throw new Error("Axios 返回空內容");
+        }
+
+        console.log(`✅ Axios 爬取成功 (${url})，資料長度: ${response.data.length}`);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ Axios 爬取失敗 (${url}):`, error.message);
+        return null;
+    }
+}
+
+async function fetchWithPuppeteer(url) {
+    try {
+        console.log(`🚀 使用 Puppeteer 爬取: ${url}`);
+
+        const browser = await puppeteer.launch({ headless: "new" });
+        const page = await browser.newPage();
+
+        await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36");
+        await page.setExtraHTTPHeaders({ "Referer": "https://www.urban-research.jp/" });
+
+        await page.goto(url, { waitUntil: 'networkidle2' });
+
+        const html = await page.content();
+        await browser.close();
+
+        if (!html || html.length === 0) {
+            throw new Error("Puppeteer 返回空內容");
+        }
+
+        console.log(`✅ Puppeteer 爬取成功 (${url})，資料長度: ${html.length}`);
+        return html;
+    } catch (error) {
+        console.error(`❌ Puppeteer 爬取失敗 (${url}):`, error.message);
+        return null;
+    }
+}
+
 async function scrapeProductData(url) {
     try {
         const siteConfig = getSiteConfig(url);
         if (!siteConfig) {
-            console.error(`❌ 未找到匹配的網站配置: ${url}`);
+            console.error(`❌ 未找到適用於該網址的爬取規則: ${url}`);
             return null;
         }
 
-        const browser = await puppeteer.launch({ headless: true });
-        const page = await browser.newPage();
-        await page.goto(url, { waitUntil: 'networkidle2' });
+        let html;
+        if (siteConfig.crawler === "axios") {
+            html = await fetchWithAxios(url);
+        } else if (siteConfig.crawler === "puppeteer") {
+            html = await fetchWithPuppeteer(url);
+        } else {
+            console.error(`❌ 未知的爬取方式: ${siteConfig.crawler}`);
+            return null;
+        }
 
-        const productData = await page.evaluate((selectors) => {
-            const getText = (selector) => {
-                const el = document.querySelector(selector);
-                return el ? el.innerText.trim() : null;
-            };
+        if (!html) {
+            console.error(`❌ 無法從 ${url} 取得有效 HTML`);
+            return null;
+        }
 
-            const getTranslatedText = (selector) => {
-                const el = document.querySelector(selector);
-                return el ? (el.getAttribute('translate') || el.innerText).trim() : null;
-            };
+        const $ = cheerio.load(html);
 
-            return {
-                productName: getText(selectors.product_name) || "Unknown Product",
-                brandName: selectors.brand_name ? getText(selectors.brand_name) : null,
-                originalPrice: getTranslatedText(selectors.original_price),
-                salePrice: getTranslatedText(selectors.sale_price),
-                url: window.location.href,
-                timestamp: new Date()
-            };
-        }, siteConfig.selectors);
+        const productName = $(siteConfig.selectors.product_name).text().trim() || "N/A";
+        const brandName = siteConfig.selectors.brand_name ? $(siteConfig.selectors.brand_name).text().trim() : "N/A";
+        const originalPrice = $(siteConfig.selectors.original_price).first().text().trim();
+        const salePrice = siteConfig.selectors.sale_price ? $(siteConfig.selectors.sale_price).first().text().trim() : "";
 
-        await browser.close();
+        const currentPrice = parseFloat((salePrice || originalPrice).replace(/[^0-9.]/g, '')) || Infinity;
 
-        productData.currentPrice = parseFloat((productData.salePrice || productData.originalPrice || "").replace(/[^0-9.]/g, '')) || Infinity;
-        return productData;
+        return {
+            productName,
+            brandName,
+            originalPrice,
+            salePrice,
+            currentPrice,
+            url,
+            timestamp: new Date()
+        };
     } catch (error) {
         console.error(`❌ 爬取 ${url} 失敗:`, error.message);
         return null;
@@ -85,7 +142,7 @@ async function scrapeProductData(url) {
 async function checkPriceAndUpdate(url, userIds = []) {
     const productData = await scrapeProductData(url);
     if (!productData) return;
-
+    console.log(productData);
     try {
         const historicalPrice = await getLowestPrice(url) || Infinity;
         const currentPrice = productData.currentPrice;
