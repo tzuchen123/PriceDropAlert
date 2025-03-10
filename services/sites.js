@@ -7,8 +7,9 @@ const siteConfigs = [
         selectors: {
             product_name: ".itemName",
             brand_name: ".brandeName a",
-            original_price: ".priceBefore",
-            sale_price: ".priceAfter"
+            original_price: ".productPrice:first .priceBefore",
+            sale_price: ".productPrice:first .priceAfter",
+            normal_price: ".productPrice:first .normalPrice_two"
         }
     },
     {
@@ -17,9 +18,10 @@ const siteConfigs = [
         crawler: "puppeteer",
         selectors: {
             product_name: ".dtl-Product_Title",
-            brand_name: ".dtl-Product_ShopName dd a", // 取第一個品牌名稱
-            original_price: ".price_BeforePrice",
-            sale_price: ".price.is-pricedown"
+            brand_name: ".dtl-Product_ShopName dd a",
+            original_price: ".dtl-Product_Price .price_BeforePrice",
+            sale_price: ".dtl-Product_Price .price.is-pricedown",
+            normal_price: ".dtl-Product_Price .price:not(.is-pricedown):not(.price_BeforePrice)"
         }
     },
     {

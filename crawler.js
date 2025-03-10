@@ -42,8 +42,6 @@ async function fetchTrackedProducts() {
 
 async function fetchWithAxios(url) {
     try {
-        console.log(`🌐 嘗試使用 Axios 爬取: ${url}`);
-
         const response = await axios.get(url, {
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
@@ -57,7 +55,6 @@ async function fetchWithAxios(url) {
             throw new Error("Axios 返回空內容");
         }
 
-        console.log(`✅ Axios 爬取成功 (${url})，資料長度: ${response.data.length}`);
         return response.data;
     } catch (error) {
         console.error(`❌ Axios 爬取失敗 (${url}):`, error.message);
@@ -67,7 +64,6 @@ async function fetchWithAxios(url) {
 
 async function fetchWithPuppeteer(url) {
     try {
-        console.log(`🚀 使用 Puppeteer 爬取: ${url}`);
 
         const browser = await puppeteer.launch({ headless: "new" });
         const page = await browser.newPage();
@@ -84,7 +80,6 @@ async function fetchWithPuppeteer(url) {
             throw new Error("Puppeteer 返回空內容");
         }
 
-        console.log(`✅ Puppeteer 爬取成功 (${url})，資料長度: ${html.length}`);
         return html;
     } catch (error) {
         console.error(`❌ Puppeteer 爬取失敗 (${url}):`, error.message);
@@ -119,10 +114,12 @@ async function scrapeProductData(url) {
 
         const productName = $(siteConfig.selectors.product_name).text().trim() || "N/A";
         const brandName = siteConfig.selectors.brand_name ? $(siteConfig.selectors.brand_name).text().trim() : "N/A";
-        const originalPrice = $(siteConfig.selectors.original_price).first().text().trim();
-        const salePrice = siteConfig.selectors.sale_price ? $(siteConfig.selectors.sale_price).first().text().trim() : "";
 
-        const currentPrice = parseFloat((salePrice || originalPrice).replace(/[^0-9.]/g, '')) || Infinity;
+        let originalPrice = $(siteConfig.selectors.original_price).first().text().trim();
+        let salePrice = siteConfig.selectors.sale_price ? $(siteConfig.selectors.sale_price).first().text().trim() : "";
+        let normalPrice = siteConfig.selectors.sale_price ? $(siteConfig.selectors.normal_price).first().text().trim() : "";
+        const priceText = normalPrice || salePrice || originalPrice;
+        const currentPrice = parseFloat(priceText.replace(/[^0-9.]/g, '')) || Infinity;
 
         return {
             productName,
@@ -142,7 +139,7 @@ async function scrapeProductData(url) {
 async function checkPriceAndUpdate(url, userIds = []) {
     const productData = await scrapeProductData(url);
     if (!productData) return;
-    console.log(productData);
+
     try {
         const historicalPrice = await getLowestPrice(url) || Infinity;
         const currentPrice = productData.currentPrice;
