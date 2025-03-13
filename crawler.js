@@ -45,7 +45,6 @@ async function fetchWithAxios(url) {
         const response = await axios.get(url, {
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
-                "Referer": "https://www.urban-research.jp/",
                 "Accept-Encoding": "gzip, deflate, br"
             },
             timeout: 10000
@@ -69,7 +68,6 @@ async function fetchWithPuppeteer(url) {
         const page = await browser.newPage();
 
         await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36");
-        await page.setExtraHTTPHeaders({ "Referer": "https://www.urban-research.jp/" });
 
         await page.goto(url, { waitUntil: 'networkidle2' });
 
@@ -115,18 +113,28 @@ async function scrapeProductData(url) {
         const productName = $(siteConfig.selectors.product_name).text().trim() || "N/A";
         const brandName = siteConfig.selectors.brand_name ? $(siteConfig.selectors.brand_name).text().trim() : "N/A";
 
-        let originalPrice = $(siteConfig.selectors.original_price).first().text().trim();
-        let salePrice = siteConfig.selectors.sale_price ? $(siteConfig.selectors.sale_price).first().text().trim() : "";
-        let normalPrice = siteConfig.selectors.sale_price ? $(siteConfig.selectors.normal_price).first().text().trim() : "";
-        const priceText = normalPrice || salePrice || originalPrice;
-        const currentPrice = parseFloat(priceText.replace(/[^0-9.]/g, '')) || Infinity;
+        let originalPriceText = $(siteConfig.selectors.original_price).first().text().trim();
+        let salePriceText = siteConfig.selectors.sale_price ? $(siteConfig.selectors.sale_price).first().text().trim() : "";
+        let normalPriceText = siteConfig.selectors.normal_price ? $(siteConfig.selectors.normal_price).first().text().trim() : "";
+
+        const priceText = normalPriceText || salePriceText || originalPriceText;
+
+        // 取出幣別
+        const currencyMatch = priceText.match(/^[^\d\s]+/);
+        const currencySymbol = currencyMatch ? currencyMatch[0] : '';
+
+        // 價格數值處理（確保不是 NaN）
+        const priceNumber = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+        const currentPriceValue = isNaN(priceNumber) ? Infinity : priceNumber;
 
         return {
             productName,
             brandName,
-            originalPrice,
-            salePrice,
-            currentPrice,
+            originalPriceText,
+            salePriceText,
+            normalPriceText,
+            currencySymbol,
+            currentPriceValue,
             url,
             timestamp: new Date()
         };
@@ -142,7 +150,7 @@ async function checkPriceAndUpdate(url, userIds = []) {
 
     try {
         const historicalPrice = await getLowestPrice(url) || Infinity;
-        const currentPrice = productData.currentPrice;
+        const currentPrice = productData.currentPriceValue;
 
         if (currentPrice < historicalPrice) {
             console.log(`🔻 價格下降! ${productData.productName} $${historicalPrice} → $${currentPrice}`);
@@ -154,7 +162,7 @@ async function checkPriceAndUpdate(url, userIds = []) {
             for (const userId of userIds) {
                 await sendLineMessage(userId, [{
                     type: 'text',
-                    text: `📢 ${productData.productName} 價格降至 $${currentPrice} 🎉\n查看商品: ${productData.url}`
+                    text: `📢 ${productData.productName} 價格降至 ${productData.currencySymbol}${currentPrice} 🎉\n查看商品: ${productData.url}`
                 }]);
             }
         } else {

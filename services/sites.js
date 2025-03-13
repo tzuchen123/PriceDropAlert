@@ -66,6 +66,15 @@ const siteConfigs = [
             original_price: "#code-05 .item-price, #code-09 .item-price, #code-12 .item-price, #code-19 .item-price, #code-default .item-price",
             sale_price: "#code-09 .item-price",
         }
+    },
+    {
+        name: "VORIAGH",
+        urlPattern: "https://en.voriagh.com/",
+        crawler: "puppeteer",  // 改成 puppeteer
+        selectors: {
+            product_name: ".page-title .base",
+            normal_price: ".price-wrapper .price"
+        }
     }
 ];
 

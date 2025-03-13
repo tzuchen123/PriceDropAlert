@@ -63,10 +63,11 @@ async function updateProduct(data) {
                 $set: {
                     productName: data.productName,
                     brandName: data.brandName,
-                    originalPrice: data.originalPrice,
-                    salePrice: data.salePrice,
-                    currentPrice: data.currentPrice,
-                    lowestPrice: newLowestPrice  // 存 MongoDB 內的歷史最低價
+                    currencySymbol: data.currencySymbol,
+                    originalPrice: data.originalPriceText,
+                    salePrice: data.salePriceText,
+                    currentPrice: data.currentPriceValue,
+                    lowestPrice: newLowestPrice
                 },
                 $push: { priceHistory: priceHistoryEntry }  // 存價格變化歷史
             },

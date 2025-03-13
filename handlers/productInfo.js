@@ -21,8 +21,8 @@ async function getProductInfo(productUrl, replyMessage) {
         // **回應使用者**
         replyMessage(`🛒 商品資訊：
 📌 名稱: ${product.productName}
-💰 當前價格: $${product.currentPrice}
-📉 歷史最低價: $${lowestPrice}
+💰 當前價格: ${product.currencySymbol}${product.currentPrice}
+📉 歷史最低價: ${product.currencySymbol}${lowestPrice}
 🔗 連結: ${productUrl}`);
     } catch (error) {
         console.error('❌ 查詢商品資訊錯誤:', error);
