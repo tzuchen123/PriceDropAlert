@@ -166,7 +166,7 @@ async function checkPriceAndUpdate(url, userIds = []) {
                 }]);
             }
         } else {
-            console.log(`📈 價格未下降: ${productData.productName} 當前 $${currentPrice}, 歷史最低 $${historicalPrice}`);
+            console.log(`📈 價格未下降: ${productData.productName} 當前 ${productData.currencySymbol}${currentPrice}, 歷史最低 ${productData.currencySymbol}${historicalPrice}`);
         }
     } catch (error) {
         console.error(`❌ 檢查價格錯誤 (${url}):`, error);

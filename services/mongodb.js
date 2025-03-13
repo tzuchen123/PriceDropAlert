@@ -50,12 +50,12 @@ async function updateProduct(data) {
 
         // 確保歷史價格紀錄
         const priceHistoryEntry = {
-            price: data.currentPrice,
+            price: data.currentPriceValue,
             timestamp: new Date()
         };
 
         // 如果新的價格低於目前最低價，則更新最低價
-        const newLowestPrice = Math.min(currentLowest, data.currentPrice);
+        const newLowestPrice = Math.min(currentLowest, data.currentPriceValue);
 
         await collection.updateOne(
             { url: data.url },
@@ -74,7 +74,7 @@ async function updateProduct(data) {
             { upsert: true }
         );
 
-        console.log(`✅ 更新 MongoDB: ${data.productName} - $${data.currentPrice}, 最低價: $${newLowestPrice}`);
+        console.log(`✅ 更新 MongoDB: ${data.productName} - $${data.currentPriceValue}, 最低價: $${newLowestPrice}`);
 
     } catch (error) {
         console.error('❌ 更新 MongoDB 失敗:', error.message);

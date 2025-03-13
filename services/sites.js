@@ -12,6 +12,7 @@ const siteConfigs = [
             normal_price: ".productPrice:first .normalPrice_two"
         }
     },
+    // 完成
     {
         name: "URBAN RESEARCH JP",
         urlPattern: "https://www.urban-research.jp/",
@@ -46,10 +47,11 @@ const siteConfigs = [
             sale_price: ".new-price"
         }
     },
+    // 完成
     {
         name: "dot st TW",
         urlPattern: "https://www.dot-st.tw/",
-        crawler: "axios", // 預設使用 axios
+        crawler: "puppeteer",
         selectors: {
             product_name: ".salepage-title",
             original_price: ".salepage-suggestprice",
@@ -59,18 +61,20 @@ const siteConfigs = [
     {
         name: "dot st JP",
         urlPattern: "https://www.dot-st.com/",
-        crawler: "axios", // 預設使用 axios
+        crawler: "puppeteer", // 預設使用 axios
         selectors: {
             product_name: ".item-name",
             brand_name: ".item-detail-brand dd",
-            original_price: "#code-05 .item-price, #code-09 .item-price, #code-12 .item-price, #code-19 .item-price, #code-default .item-price",
-            sale_price: "#code-09 .item-price",
+            original_price: ".productPrice:first .priceBefore, #code-default .item-original-price",
+            sale_price: ".productPrice:first .priceAfter, #code-default .item-price-off",
+            normal_price: ".productPrice:first .normalPrice_two, #code-default .item-price"
         }
     },
+    // 完成
     {
         name: "VORIAGH",
         urlPattern: "https://en.voriagh.com/",
-        crawler: "puppeteer",  // 改成 puppeteer
+        crawler: "axios",
         selectors: {
             product_name: ".page-title .base",
             normal_price: ".price-wrapper .price"
