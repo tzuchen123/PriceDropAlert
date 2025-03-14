@@ -12,6 +12,7 @@ require('dotenv').config();
 
 // 在應用程式啟動時連接 Redis
 (async () => {
+    console.log(`[${new Date().toISOString()}] ✅ 開始爬蟲`);
     await connectRedis();
     // await connectDB();
     // await initializeDB();如果沒table會建立
