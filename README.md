@@ -52,8 +52,7 @@
 
 ---
 
-## 本機運行
-
+## 安裝與執行
 
 ```bash
 git clone https://github.com/your-repo/price-drop-alert.git
